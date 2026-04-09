@@ -16,8 +16,10 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Checkout
+      - name: Checkout latest main
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -33,6 +35,19 @@ jobs:
       - name: Generate Prisma client
         working-directory: college-placement-portal/backend
         run: npx prisma generate --schema=prisma/schema.prisma
+
+      - name: Verify revision and seed file encoding
+        working-directory: college-placement-portal/backend
+        run: |
+          git rev-parse HEAD
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("scripts/seed_coordinator.ts")
+          b = p.read_bytes()
+          if b"\x00" in b:
+              raise SystemExit("seed_coordinator.ts contains null bytes (invalid UTF-16-like encoding)")
+          print("seed_coordinator.ts encoding guard: OK")
+          PY
 
       - name: Seed coordinator account
         working-directory: college-placement-portal/backend
