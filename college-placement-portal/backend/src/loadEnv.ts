@@ -7,6 +7,9 @@ import path from 'path';
 import dotenv from 'dotenv';
 
 const originalProcessSecrets = {
+    DATABASE_URL: process.env.DATABASE_URL,
+    COORDINATOR_EMAIL: process.env.COORDINATOR_EMAIL,
+    COORDINATOR_PASSWORD: process.env.COORDINATOR_PASSWORD,
     ATS_LLM_API_KEY: process.env.ATS_LLM_API_KEY,
     OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,

@@ -58,6 +58,16 @@ jobs:
           INPUT_COORDINATOR_EMAIL: ${{ github.event.inputs.coordinator_email }}
           INPUT_COORDINATOR_PASSWORD: ${{ github.event.inputs.coordinator_password }}
         run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL secret is missing."
+            exit 1
+          fi
+          if echo "$DATABASE_URL" | grep -Eq "(127\\.0\\.0\\.1|localhost)"; then
+            echo "DATABASE_URL points to localhost/127.0.0.1, which is unreachable from GitHub Actions."
+            echo "Set DATABASE_URL to your Supabase pooler/direct connection string in repository secrets."
+            exit 1
+          fi
+
           if [ -n "$INPUT_COORDINATOR_EMAIL" ]; then
             export COORDINATOR_EMAIL="$INPUT_COORDINATOR_EMAIL"
           else
@@ -68,6 +78,11 @@ jobs:
             export COORDINATOR_PASSWORD="$INPUT_COORDINATOR_PASSWORD"
           else
             export COORDINATOR_PASSWORD="$SECRET_COORDINATOR_PASSWORD"
+          fi
+
+          if [ -z "$COORDINATOR_EMAIL" ] || [ -z "$COORDINATOR_PASSWORD" ]; then
+            echo "COORDINATOR_EMAIL / COORDINATOR_PASSWORD are missing. Set secrets or workflow inputs."
+            exit 1
           fi
 
           npm run seed:coordinator
